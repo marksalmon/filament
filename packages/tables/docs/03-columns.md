@@ -81,6 +81,20 @@ TextColumn::make('full_name')
     })
 ```
 
+If a column is `sortable()`, you may choose to sort it by default using the `getDefaultTableSortColumn()` and `getDefaultTableSortDirection()` methods:
+
+```php
+protected function getDefaultTableSortColumn(): ?string
+{
+    return 'full_name';
+}
+
+protected function getDefaultTableSortDirection(): ?string
+{
+    return 'asc';
+}
+```
+
 ### Searching
 
 Columns may be searchable, by using the text input in the top right of the table. To make a column searchable, you must use the `searchable()` method:
@@ -319,6 +333,24 @@ TextColumn::make('users_avg_age')->avg('users', 'age')
 In this example, `users` is the name of the relationship, while `age` is the field that is being averaged. The name of the column must be `users_avg_age`, as this is the convention that [Laravel uses](https://laravel.com/docs/9.x/eloquent-relationships#other-aggregate-functions) for storing the result.
 
 ## Text column
+
+You can display a description below the contents of a text column using the `description()` method:
+
+```php
+use Filament\Tables\Columns\TextColumn;
+
+TextColumn::make('title')
+    ->description(fn (Post $record): string => $record->description);
+```
+
+By default, the description is displayed below the main text, but you can move it above using the second parameter:
+
+```php
+use Filament\Tables\Columns\TextColumn;
+
+TextColumn::make('title')
+    ->description(fn (Post $record): string => $record->description, position: 'above');
+```
 
 You may use the `date()` and `dateTime()` methods to format the column's state using [PHP date formatting tokens](https://www.php.net/manual/en/datetime.format.php):
 

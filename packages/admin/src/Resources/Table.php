@@ -23,6 +23,10 @@ class Table
 
     protected array $headerActions = [];
 
+    protected ?string $pollingInterval = null;
+
+    protected ?string $reorderColumn = null;
+
     final public function __construct()
     {
     }
@@ -56,7 +60,7 @@ class Table
     public function defaultSort(string $column, string $direction = 'asc'): static
     {
         $this->defaultSortColumn = $column;
-        $this->defaultSortDirection = $direction;
+        $this->defaultSortDirection = strtolower($direction);
 
         return $this;
     }
@@ -125,6 +129,13 @@ class Table
         return $this;
     }
 
+    public function poll(?string $interval = '10s'): static
+    {
+        $this->pollingInterval = $interval;
+
+        return $this;
+    }
+
     /**
      * @deprecated Use `appendActions()` instead.
      */
@@ -151,6 +162,13 @@ class Table
     public function pushHeaderActions(array $actions): static
     {
         $this->appendHeaderActions($actions);
+
+        return $this;
+    }
+
+    public function reorderable(?string $column = 'sort'): static
+    {
+        $this->reorderColumn = $column;
 
         return $this;
     }
@@ -193,5 +211,15 @@ class Table
     public function getHeaderActions(): array
     {
         return $this->headerActions;
+    }
+
+    public function getReorderColumn(): ?string
+    {
+        return $this->reorderColumn;
+    }
+
+    public function getPollingInterval(): ?string
+    {
+        return $this->pollingInterval;
     }
 }

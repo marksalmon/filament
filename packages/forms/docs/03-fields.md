@@ -281,8 +281,6 @@ TextInput::make('name')
     ->maxLength(255)
 ```
 
-> When using `minLength()` or `maxLength()` with `numeric()`, be aware that the validation will apply to the value of the input instead of its length. This is in line with the behaviour of Laravel's `min` and `max` validation rules.
-
 You may also specify the exact length of the input by setting the `length()`. This method adds both frontend and backend validation:
 
 ```php
@@ -290,8 +288,6 @@ use Filament\Forms\Components\TextInput;
 
 TextInput::make('code')->length(8)
 ```
-
-Internally, this uses the `size` rule by default, and the `digits` rule for numeric inputs.
 
 In addition, you may validate the minimum and maximum value of the input by setting the `minValue()` and `maxValue()` methods:
 
@@ -531,7 +527,7 @@ Select::make('authorId')
     ->relationship('author', 'full_name')
 ```
 
-Alternatively, you can use the `getOptionLabelUsing()` method to transform the selected option's Eloquent model into a label. But please note, this is much less performant than using a virtual column:
+Alternatively, you can use the `getOptionLabelFromRecordUsing()` method to transform the selected option's Eloquent model into a label. But please note, this is much less performant than using a virtual column:
 
 ```php
 use Filament\Forms\Components\Select;
@@ -568,7 +564,7 @@ Since HTML does not support nested `<form>` elements, you must also render the m
 ```blade
 <form wire:submit.prevent="submit">
     {{ $this->form }}
-    
+
     <button type="submit">
         Submit
     </button>
@@ -587,7 +583,7 @@ use Filament\Forms\Components\Select;
 
 MultiSelect::make('technologies')
     ->options([
-        'tailwind' => 'TailwindCSS',
+        'tailwind' => 'Tailwind CSS',
         'alpine' => 'Alpine.js',
         'laravel' => 'Laravel',
         'livewire' => 'Laravel Livewire',
@@ -662,7 +658,7 @@ MultiSelect::make('participants')
     ->relationship('participants', 'full_name')
 ```
 
-Alternatively, you can use the `getOptionLabelUsing()` method to transform the selected option's Eloquent model into a label. But please note, this is much less performant than using a virtual column:
+Alternatively, you can use the `getOptionLabelFromRecordUsing()` method to transform the selected option's Eloquent model into a label. But please note, this is much less performant than using a virtual column:
 
 ```php
 use Filament\Forms\Components\MultiSelect;
@@ -766,6 +762,16 @@ Toggle::make('is_admin')
     ->offIcon('heroicon-s-user')
 ```
 
+You may also customize the color representing each state. These may be either `primary`, `secondary`, `success`, `warning` or `danger`:
+
+```php
+use Filament\Forms\Components\Toggle;
+
+Toggle::make('is_admin')
+    ->onColor('success')
+    ->offColor('danger')
+```
+
 ![](https://user-images.githubusercontent.com/41773797/147613184-9086c102-ad71-4c4e-9170-9a4201a80c66.png)
 
 If you're saving the boolean value using Eloquent, you should be sure to add a `boolean` [cast](https://laravel.com/docs/eloquent-mutators#attribute-casting) to the model property:
@@ -792,7 +798,7 @@ use Filament\Forms\Components\CheckboxList;
 
 CheckboxList::make('technologies')
     ->options([
-        'tailwind' => 'TailwindCSS',
+        'tailwind' => 'Tailwind CSS',
         'alpine' => 'Alpine.js',
         'laravel' => 'Laravel',
         'livewire' => 'Laravel Livewire',
@@ -823,7 +829,7 @@ use Filament\Forms\Components\CheckboxList;
 
 CheckboxList::make('technologies')
     ->options([
-        'tailwind' => 'TailwindCSS',
+        'tailwind' => 'Tailwind CSS',
         'alpine' => 'Alpine.js',
         'laravel' => 'Laravel',
         'livewire' => 'Laravel Livewire',
@@ -872,7 +878,7 @@ CheckboxList::make('participants')
     ->relationship('participants', 'full_name')
 ```
 
-Alternatively, you can use the `getOptionLabelUsing()` method to transform the selected option's Eloquent model into a label. But please note, this is much less performant than using a virtual column:
+Alternatively, you can use the `getOptionLabelFromRecordUsing()` method to transform the selected option's Eloquent model into a label. But please note, this is much less performant than using a virtual column:
 
 ```php
 use Filament\Forms\Components\CheckboxList;
@@ -1076,6 +1082,18 @@ FileUpload::make('attachment')
     })
 ```
 
+You can keep the randomly generated file names, while still storing the original file name, using the `storeFileNamesIn()` method:
+
+```php
+use Filament\Forms\Components\FileUpload;
+
+FileUpload::make('attachments')
+    ->multiple()
+    ->storeFileNamesIn('attachment_file_names')
+```
+
+`attachment_file_names` will now store the original file name/s of your uploaded files.
+
 You may restrict the types of files that may be uploaded using the `acceptedFileTypes()` method, and passing an array of MIME types. You may also use the `image()` method as shorthand to allow all image MIME types.
 
 ```php
@@ -1170,7 +1188,17 @@ FileUpload::make('attachments')
     ->enableReordering()
 ```
 
-If you wish to add a download button to each uploaded file, you can use the `enableDownload()` method:
+You can add a button to open each file in a new tab with the `enableOpen()` method:
+
+```php
+use Filament\Forms\Components\FileUpload;
+
+FileUpload::make('attachments')
+    ->multipe()
+    ->enableOpen()
+```
+
+If you wish to add a download button to each file instead, you can use the `enableDownload()` method:
 
 ```php
 use Filament\Forms\Components\FileUpload;
@@ -1430,6 +1458,20 @@ Repeater::make('qualifications')
     ->collapsed()
 ```
 
+### Cloning items
+
+You may allow repeater items to be duplicated using the `cloneable()` method:
+
+```php
+use Filament\Forms\Components\Repeater;
+
+Repeater::make('qualifications')
+    ->schema([
+        // ...
+    ])
+    ->cloneable()
+```
+
 ### Populating automatically from a relationship
 
 You may employ the `relationship()` method of the repeater to configure a relationship to automatically retrieve and save repeater items:
@@ -1492,6 +1534,52 @@ Repeater::make('members')
 ```
 
 This method accepts the same options as the `columns()` method of the [grid](layout#grid). This allows you to responsively customize the number of grid columns at various breakpoints.
+
+### Item labels
+
+You may add a label for repeater items using the `itemLabel()` method:
+
+```php
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\TextInput;
+
+Repeater::make('members')
+    ->schema([
+        TextInput::make('name')
+            ->lazy(),
+    ])
+    ->itemLabel(fn (array $state): ?string => $state['name'] ?? null),
+```
+
+Any fields that you use from `$state` should be `reactive()` or `lazy()` if you wish to see the item label update live as you use the form.
+
+### Using `$get()` to access parent field values
+
+All form components are able to [use `$get()` and `$set()`](advanced) to access another field's value. However, you might experience unexpected behaviour when using this inside the repeater's schema.
+
+This is because `$get()` and `$set()`, by default, are scoped to the current repeater item. This means that you are able to interact with another field inside that repeater item easily without knowing which repeater item the current form component belongs to.
+
+The consequence of this, is that you may be confused when you are unable to interact with a field outside the repeater. We use `../` syntax to solve this problem - `$get('../../parent_field_name')`.
+
+Consider your form has this data structure:
+
+```php
+[
+    'client_id' => 1,
+
+    'repeater' => [
+        'item1' => [
+            'service_id' => 2,
+        ],
+    ],
+]
+```
+
+You are trying to retrieve the value of `client_id` from inside the repeater item.
+
+`$get()` is relative to the current repeater item, so `$get('client_id')` is looking for `$get('repeater.item1.client_id')`.
+
+You can use `../` to go up a level in the data structure, so `$get('../client_id')` is $get('repeater.client_id') and `$get('../../client_id')` is `$get('client_id')`.
 
 ## Builder
 
@@ -1742,6 +1830,15 @@ KeyValue::make('meta')
     ->disableAddingRows()
     ->disableDeletingRows()
     ->disableEditingKeys()
+```
+
+You can allow the user to reorder rows within the table:
+
+```php
+use Filament\Forms\Components\KeyValue;
+
+KeyValue::make('meta')
+    ->reorderable()
 ```
 
 You may also add placeholders for the key and value fields using the `keyPlaceholder()` and `valuePlaceholder()` methods:

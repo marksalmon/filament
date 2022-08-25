@@ -2,6 +2,14 @@
 
 return [
 
+    'columns' => [
+
+        'tags' => [
+            'more' => 'dan :count lainnya',
+        ],
+
+    ],
+
     'fields' => [
 
         'search_query' => [
@@ -45,6 +53,14 @@ return [
 
     'buttons' => [
 
+        'disable_reordering' => [
+            'label' => 'Selesaikan mengurutkan ulang data',
+        ],
+
+        'enable_reordering' => [
+            'label' => 'Mengurutkan ulang data',
+        ],
+
         'filter' => [
             'label' => 'Filter',
         ],
@@ -69,6 +85,7 @@ return [
 
             'reset' => [
                 'label' => 'Atur ulang filter',
+                'tooltip' => 'Atur ulang filter',
             ],
 
             'close' => [
@@ -76,6 +93,8 @@ return [
             ],
 
         ],
+
+        'indicator' => 'Filter aktif',
 
         'multi_select' => [
             'placeholder' => 'Semua',
@@ -98,6 +117,8 @@ return [
         ],
 
     ],
+
+    'reorder_indicator' => 'Seret dan lepaskan data kedalam urutan.',
 
     'selection_indicator' => [
 

@@ -2,6 +2,7 @@
 
 namespace Filament\Resources\RelationManagers;
 
+use Closure;
 use Filament\Facades\Filament;
 use Filament\Http\Livewire\Concerns\CanNotify;
 use function Filament\locale_has_pluralization;
@@ -24,7 +25,7 @@ class RelationManager extends Component implements Tables\Contracts\HasRelations
 
     public Model $ownerRecord;
 
-    public string $pageClass;
+    public ?string $pageClass = null;
 
     protected static ?string $recordTitleAttribute = null;
 
@@ -408,6 +409,21 @@ class RelationManager extends Component implements Tables\Contracts\HasRelations
         return $this->getResourceTable()->getHeaderActions();
     }
 
+    protected function getTableReorderColumn(): ?string
+    {
+        return $this->getResourceTable()->getReorderColumn();
+    }
+
+    protected function isTableReorderable(): bool
+    {
+        return filled($this->getTableReorderColumn()) && $this->canReorder();
+    }
+
+    protected function getTablePollingInterval(): ?string
+    {
+        return $this->getResourceTable()->getPollingInterval();
+    }
+
     protected function getTableHeading(): ?string
     {
         return static::getTitle();
@@ -478,6 +494,11 @@ class RelationManager extends Component implements Tables\Contracts\HasRelations
         return $this->can('forceDeleteAny');
     }
 
+    protected function canReorder(): bool
+    {
+        return $this->can('reorder');
+    }
+
     protected function canReplicate(Model $record): bool
     {
         return $this->can('replicate', $record);
@@ -501,5 +522,61 @@ class RelationManager extends Component implements Tables\Contracts\HasRelations
     protected function getViewData(): array
     {
         return [];
+    }
+
+    protected function getTableRecordUrlUsing(): ?Closure
+    {
+        return function (Model $record): ?string {
+            foreach (['view', 'edit'] as $action) {
+                $action = $this->getCachedTableAction($action);
+
+                if (! $action) {
+                    continue;
+                }
+
+                $action->record($record);
+
+                if ($action->isHidden()) {
+                    continue;
+                }
+
+                $url = $action->getUrl();
+
+                if (! $url) {
+                    continue;
+                }
+
+                return $url;
+            }
+
+            return null;
+        };
+    }
+
+    protected function getTableRecordActionUsing(): ?Closure
+    {
+        return function (Model $record): ?string {
+            foreach (['view', 'edit'] as $action) {
+                $action = $this->getCachedTableAction($action);
+
+                if (! $action) {
+                    continue;
+                }
+
+                $action->record($record);
+
+                if ($action->isHidden()) {
+                    continue;
+                }
+
+                if ($action->getUrl()) {
+                    continue;
+                }
+
+                return $action->getName();
+            }
+
+            return null;
+        };
     }
 }

@@ -2,6 +2,14 @@
 
 return [
 
+    'columns' => [
+
+        'tags' => [
+            'more' => 'en nog :count',
+        ],
+
+    ],
+
     'fields' => [
 
         'search_query' => [
@@ -45,6 +53,14 @@ return [
 
     'buttons' => [
 
+        'disable_reordering' => [
+            'label' => 'Herordenen van records voltooien',
+        ],
+
+        'enable_reordering' => [
+            'label' => 'Records herordenen',
+        ],
+
         'filter' => [
             'label' => 'Filteren',
         ],
@@ -69,6 +85,7 @@ return [
 
             'reset' => [
                 'label' => 'Filters resetten',
+                'tooltip' => 'Filters resetten',
             ],
 
             'close' => [
@@ -76,6 +93,8 @@ return [
             ],
 
         ],
+
+        'indicator' => 'Actieve filters',
 
         'multi_select' => [
             'placeholder' => 'Alles',
@@ -91,13 +110,15 @@ return [
 
             'only_trashed' => 'Alleen verwijderde records',
 
-            'with_trashed' => 'Met verwijderde records records',
+            'with_trashed' => 'Met verwijderde records',
 
             'without_trashed' => 'Zonder verwijderde records',
 
         ],
 
     ],
+
+    'reorder_indicator' => 'Sleep de records in de juiste volgorde.',
 
     'selection_indicator' => [
 

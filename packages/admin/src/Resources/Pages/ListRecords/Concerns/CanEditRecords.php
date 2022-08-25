@@ -2,6 +2,7 @@
 
 namespace Filament\Resources\Pages\ListRecords\Concerns;
 
+use Filament\Notifications\Notification;
 use Filament\Tables;
 use Illuminate\Database\Eloquent\Model;
 
@@ -36,7 +37,7 @@ trait CanEditRecords
         $this->callHook('beforeFill');
         $this->callHook('beforeEditFill');
 
-        $data = $this->getMountedTableActionRecord()->toArray();
+        $data = $this->getMountedTableActionRecord()->attributesToArray();
 
         $data = $this->mutateFormDataBeforeFill($data);
 
@@ -76,7 +77,10 @@ trait CanEditRecords
         $this->callHook('afterSave');
 
         if (filled($this->getSavedNotificationMessage())) {
-            $this->notify('success', $this->getSavedNotificationMessage());
+            Notification::make()
+                ->title($this->getSavedNotificationMessage())
+                ->success()
+                ->send();
         }
     }
 

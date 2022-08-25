@@ -49,7 +49,7 @@ class ViewRecord extends Page
     {
         $this->callHook('beforeFill');
 
-        $data = $this->getRecord()->toArray();
+        $data = $this->getRecord()->attributesToArray();
 
         $data = $this->mutateFormDataBeforeFill($data);
 
@@ -169,6 +169,7 @@ class ViewRecord extends Page
     {
         return [
             'form' => $this->makeForm()
+                ->context('view')
                 ->disabled()
                 ->model($this->getRecord())
                 ->schema($this->getFormSchema())

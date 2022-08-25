@@ -13,7 +13,10 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 
 trait InteractsWithTable
 {
+    use CanBeStriped;
     use CanPaginateRecords;
+    use CanPollRecords;
+    use CanReorderRecords;
     use CanSearchRecords;
     use CanSelectRecords;
     use CanSortRecords;
@@ -27,6 +30,7 @@ trait InteractsWithTable
     use HasHeader;
     use HasRecords;
     use HasRecordAction;
+    use HasRecordClasses;
     use HasRecordUrl;
     use Forms\Concerns\InteractsWithForms;
 
@@ -49,16 +53,31 @@ trait InteractsWithTable
         $this->cacheTableFilters();
         $this->cacheForm('tableFiltersForm', $this->getTableFiltersForm());
 
-        if (! $this->hasMounted) {
-            $this->getTableColumnToggleForm()->fill(session()->get(
-                $this->getTableColumnToggleFormStateSessionKey(),
-                $this->getDefaultTableColumnToggleState()
-            ));
-
-            $this->getTableFiltersForm()->fill($this->tableFilters);
-
-            $this->hasMounted = true;
+        if ($this->hasMounted) {
+            return;
         }
+
+        $this->getTableColumnToggleForm()->fill(session()->get(
+            $this->getTableColumnToggleFormStateSessionKey(),
+            $this->getDefaultTableColumnToggleState()
+        ));
+
+        $filtersSessionKey = $this->getTableFiltersSessionKey();
+
+        if ($this->shouldPersistTableFiltersInSession() && session()->has($filtersSessionKey)) {
+            $this->tableFilters = array_merge(
+                $this->tableFilters ?? [],
+                session()->get($filtersSessionKey) ?? [],
+            );
+        }
+
+        if (! count($this->tableFilters ?? [])) {
+            $this->tableFilters = null;
+        }
+
+        $this->getTableFiltersForm()->fill($this->tableFilters);
+
+        $this->hasMounted = true;
     }
 
     public function mountInteractsWithTable(): void
@@ -78,23 +97,7 @@ trait InteractsWithTable
 
     protected function getTable(): Table
     {
-        return $this->makeTable()
-            ->content($this->getTableContent())
-            ->contentFooter($this->getTableContentFooter())
-            ->description($this->getTableDescription())
-            ->emptyState($this->getTableEmptyState())
-            ->emptyStateDescription($this->getTableEmptyStateDescription())
-            ->emptyStateHeading($this->getTableEmptyStateHeading())
-            ->emptyStateIcon($this->getTableEmptyStateIcon())
-            ->enablePagination($this->isTablePaginationEnabled())
-            ->filtersFormWidth($this->getTableFiltersFormWidth())
-            ->filtersLayout($this->getTableFiltersLayout())
-            ->recordAction($this->getTableRecordAction())
-            ->getRecordUrlUsing($this->getTableRecordUrlUsing())
-            ->header($this->getTableHeader())
-            ->heading($this->getTableHeading())
-            ->model($this->getTableQuery()->getModel()::class)
-            ->recordsPerPageSelectOptions($this->getTableRecordsPerPageSelectOptions());
+        return Table::make($this);
     }
 
     protected function getTableQueryStringIdentifier(): ?string
@@ -127,11 +130,6 @@ trait InteractsWithTable
             'mountedTableActionForm' => $this->getMountedTableActionForm(),
             'mountedTableBulkActionForm' => $this->getMountedTableBulkActionForm(),
         ];
-    }
-
-    protected function makeTable(): Table
-    {
-        return Table::make($this);
     }
 
     protected function getTableQuery(): Builder | Relation

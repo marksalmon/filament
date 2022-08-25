@@ -279,6 +279,46 @@ Tabs::make('Heading')
     ])
 ```
 
+The first tab will be open by default. You can change the default open tab using the `activeTab()` method:
+
+```php
+use Filament\Forms\Components\Tabs;
+
+Tabs::make('Heading')
+    ->tabs([
+        Tabs\Tab::make('Label 1')
+            ->schema([
+                // ...
+            ]),
+        Tabs\Tab::make('Label 2')
+            ->schema([
+                // ...
+            ]),
+        Tabs\Tab::make('Label 3')
+            ->schema([
+                // ...
+            ]),
+    ])
+    ->activeTab(2)
+```
+
+Tabs may have an icon and badge, which you can set using the `icon()` and `badge()` methods:
+
+```php
+use Filament\Forms\Components\Tabs;
+
+Tabs::make('Heading')
+    ->tabs([
+        Tabs\Tab::make('Notifications')
+            ->icon('heroicon-o-bell') // [tl! focus:start]
+            ->badge('39') // [tl! focus:end]
+            ->schema([
+                // ...
+            ]),
+        // ...
+    ])
+```
+  
 ## Wizard
 
 Similar to [tabs](#tabs), you may want to use a multistep form wizard to reduce the number of components that are visible at once. These are especially useful if your form has a definite chronological order, in which you want each step to be validated as the user progresses.
@@ -302,7 +342,7 @@ Wizard::make([
 ])
 ```
 
-> We have different setup instructions you're looking to add a wizard to an admin panel [resource Create page](../admin/creating-records#wizards) or a table [action](../tables/actions#wizards). Following that documentation will ensure that the ability to submit the form is only available on the last step.
+> We have different setup instructions you're looking to add a wizard to an admin panel [resource Create page](../admin/resources/creating-records#wizards) or a table [action](../tables/actions#wizards). Following that documentation will ensure that the ability to submit the form is only available on the last step.
 
 Each step has a mandatory label. You may optionally also add a description for extra detail:
 
@@ -341,6 +381,16 @@ Wizard::make([
 Wizard::make([
     // ...
 ])->submitAction(new HtmlString('<button type="submit">Submit</button>'))
+```
+
+You may use the `startOnStep()` method to load a specific step in the wizard:
+
+```php
+use Filament\Forms\Components\Wizard;
+
+Wizard::make([
+    // ...
+])->startOnStep(2)
 ```
 
 ## Section

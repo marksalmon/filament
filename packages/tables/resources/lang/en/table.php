@@ -53,6 +53,14 @@ return [
 
     'buttons' => [
 
+        'disable_reordering' => [
+            'label' => 'Finish reordering records',
+        ],
+
+        'enable_reordering' => [
+            'label' => 'Reorder records',
+        ],
+
         'filter' => [
             'label' => 'Filter',
         ],
@@ -77,6 +85,7 @@ return [
 
             'reset' => [
                 'label' => 'Reset filters',
+                'tooltip' => 'Reset filters',
             ],
 
             'close' => [
@@ -84,6 +93,8 @@ return [
             ],
 
         ],
+
+        'indicator' => 'Active filters',
 
         'multi_select' => [
             'placeholder' => 'All',
@@ -106,6 +117,8 @@ return [
         ],
 
     ],
+
+    'reorder_indicator' => 'Drag and drop the records into order.',
 
     'selection_indicator' => [
 

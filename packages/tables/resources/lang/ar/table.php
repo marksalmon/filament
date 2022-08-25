@@ -2,6 +2,14 @@
 
 return [
 
+    'columns' => [
+
+        'tags' => [
+            'more' => 'و :count أكثر',
+        ],
+
+    ],
+
     'fields' => [
 
         'search_query' => [
@@ -45,6 +53,14 @@ return [
 
     'buttons' => [
 
+        'disable_reordering' => [
+            'label' => 'إنهاء إعادة ترتيب السجلات',
+        ],
+
+        'enable_reordering' => [
+            'label' => 'إعادة ترتيب السجلات',
+        ],
+
         'filter' => [
             'label' => 'تصفية',
         ],
@@ -68,7 +84,8 @@ return [
         'buttons' => [
 
             'reset' => [
-                'label' => 'إعادة ضبط الفلترة',
+                'label' => 'إعادة ضبط المصفيات',
+                'tooltip' => 'إعادة ضبط المصفيات',
             ],
 
             'close' => [
@@ -76,6 +93,8 @@ return [
             ],
 
         ],
+
+        'indicator' => 'المصفيات النشطة',
 
         'multi_select' => [
             'placeholder' => 'الكل',
@@ -85,7 +104,21 @@ return [
             'placeholder' => 'الكل',
         ],
 
+        'trashed' => [
+
+            'label' => 'السجلات المحذوفة',
+
+            'only_trashed' => 'السجلات المحذوفة فقط',
+
+            'with_trashed' => 'مع السجلات المحذوفة',
+
+            'without_trashed' => 'بدون السجلات المحذوفة',
+
+        ],
+
     ],
+
+    'reorder_indicator' => 'قم بسحب وإسقاط السجلات بالترتيب.',
 
     'selection_indicator' => [
 

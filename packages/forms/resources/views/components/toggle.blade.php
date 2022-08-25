@@ -19,8 +19,20 @@
                 x-bind:aria-checked="state.toString()"
                 x-on:click="state = ! state"
                 x-bind:class="{
-                    'bg-primary-600': state,
-                    'bg-gray-200 @if (config('forms.dark_mode')) dark:bg-white/10 @endif': ! state,
+                    '{{ match ($getOnColor()) {
+                        'danger' => 'bg-danger-500',
+                        'secondary' => 'bg-gray-500',
+                        'success' => 'bg-success-500',
+                        'warning' => 'bg-warning-500',
+                        default => 'bg-primary-600',
+                    } }}': state,
+                    '{{ match ($getOffColor()) {
+                        'danger' => 'bg-danger-500',
+                        'primary' => 'bg-primary-500',
+                        'success' => 'bg-success-500',
+                        'warning' => 'bg-warning-500',
+                        default => 'bg-gray-200',
+                    } }} @if (config('forms.dark_mode')) dark:bg-white/10 @endif': ! state,
                 }"
                 {!! $isAutofocused() ? 'autofocus' : null !!}
                 {!! $isDisabled() ? 'disabled' : null !!}
@@ -35,20 +47,16 @@
                 {{ $getExtraAlpineAttributeBag() }}
             >
                 <span
-                    @class([
-                        'pointer-events-none relative inline-block h-5 w-5 rounded-full bg-white shadow transform ring-0 ease-in-out transition duration-200',
-                    ])
-                    :class="{
+                    class="pointer-events-none relative inline-block h-5 w-5 rounded-full bg-white shadow transform ring-0 ease-in-out transition duration-200"
+                    x-bind:class="{
                         'translate-x-5 rtl:-translate-x-5': state,
                         'translate-x-0': ! state,
                     }"
                 >
                     <span
-                        @class([
-                            'absolute inset-0 h-full w-full flex items-center justify-center transition-opacity',
-                        ])
+                        class="absolute inset-0 h-full w-full flex items-center justify-center transition-opacity"
                         aria-hidden="true"
-                        :class="{
+                        x-bind:class="{
                             'opacity-0 ease-out duration-100': state,
                             'opacity-100 ease-in duration-200': ! state,
                         }"
@@ -61,7 +69,7 @@
                     <span
                         class="absolute inset-0 h-full w-full flex items-center justify-center transition-opacity"
                         aria-hidden="true"
-                        :class="{
+                        x-bind:class="{
                             'opacity-100 ease-in duration-200': state,
                             'opacity-0 ease-out duration-100': ! state,
                         }"

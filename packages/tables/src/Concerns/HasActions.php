@@ -33,21 +33,23 @@ trait HasActions
             fn (): array => $this->getTableActions(),
         );
 
-        $this->cachedTableActions = collect($actions)
-            ->mapWithKeys(function (Action | ActionGroup $action, int $index): array {
-                if ($action instanceof ActionGroup) {
-                    foreach ($action->getActions() as $groupedAction) {
-                        $groupedAction->table($this->getCachedTable());
-                    }
+        $this->cachedTableActions = [];
 
-                    return [$index => $action];
+        foreach ($actions as $index => $action) {
+            if ($action instanceof ActionGroup) {
+                foreach ($action->getActions() as $groupedAction) {
+                    $groupedAction->table($this->getCachedTable());
                 }
 
-                $action->table($this->getCachedTable());
+                $this->cachedTableActions[$index] = $action;
 
-                return [$action->getName() => $action];
-            })
-            ->toArray();
+                continue;
+            }
+
+            $action->table($this->getCachedTable());
+
+            $this->cachedTableActions[$action->getName()] = $action;
+        }
     }
 
     protected function configureTableAction(Action $action): void
@@ -93,13 +95,14 @@ trait HasActions
         } finally {
             $this->mountedTableAction = null;
 
+            $action->record(null);
             $this->mountedTableActionRecord(null);
 
             $action->resetArguments();
             $action->resetFormData();
 
             $this->dispatchBrowserEvent('close-modal', [
-                'id' => static::class . '-table-action',
+                'id' => "{$this->id}-table-action",
             ]);
         }
     }
@@ -133,10 +136,8 @@ trait HasActions
             $action->callBeforeFormFilled();
         }
 
-        app()->call($action->getMountUsing(), [
-            'action' => $action,
+        $action->mount([
             'form' => $this->getMountedTableActionForm(),
-            'record' => $this->getMountedTableActionRecord(),
         ]);
 
         if ($action->hasForm()) {
@@ -150,7 +151,7 @@ trait HasActions
         $this->resetErrorBag();
 
         $this->dispatchBrowserEvent('open-modal', [
-            'id' => static::class . '-table-action',
+            'id' => "{$this->id}-table-action",
         ]);
     }
 
@@ -183,12 +184,18 @@ trait HasActions
         return $this->makeForm()
             ->schema($action->getFormSchema())
             ->model($this->getMountedTableActionRecord() ?? $this->getTableQuery()->getModel()::class)
-            ->statePath('mountedTableActionData');
+            ->statePath('mountedTableActionData')
+            ->context($this->mountedTableAction);
+    }
+
+    public function getMountedTableActionRecordKey()
+    {
+        return $this->mountedTableActionRecord;
     }
 
     public function getMountedTableActionRecord(): ?Model
     {
-        $recordKey = $this->mountedTableActionRecord;
+        $recordKey = $this->getMountedTableActionRecordKey();
 
         if ($this->cachedMountedTableActionRecord && ($this->cachedMountedTableActionRecordKey === $recordKey)) {
             return $this->cachedMountedTableActionRecord;
@@ -196,7 +203,7 @@ trait HasActions
 
         $this->cachedMountedTableActionRecordKey = $recordKey;
 
-        return $this->cachedMountedTableActionRecord = $this->resolveTableRecord($recordKey);
+        return $this->cachedMountedTableActionRecord = $this->getTableRecord($recordKey);
     }
 
     public function getCachedTableAction(string $name): ?Action
@@ -234,5 +241,10 @@ trait HasActions
     protected function getTableActions(): array
     {
         return [];
+    }
+
+    protected function getTableActionsPosition(): ?string
+    {
+        return null;
     }
 }

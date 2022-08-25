@@ -118,6 +118,8 @@ return [
 
     ],
 
+    'reorder_indicator' => 'Zum Sortieren die Datensätze per Drag & Drop in die richtige Reihenfolge ziehen.',
+
     'selection_indicator' => [
 
         'buttons' => [
@@ -132,7 +134,7 @@ return [
 
         ],
 
-        'selected_count' => '1 Datensatz ausgewählt ausgewählt.|:count Datensätze ausgewählt.',
+        'selected_count' => '1 Datensatz ausgewählt.|:count Datensätze ausgewählt.',
     ],
 
 ];

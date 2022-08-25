@@ -1,5 +1,5 @@
 ---
-title: Global Search
+title: Global search
 ---
 
 Global search allows you to search across all of your resource records, from anywhere in the admin panel.
@@ -64,6 +64,6 @@ Global search results will link to the [Edit page](editing-records) of your reso
 ```php
 public static function getGlobalSearchResultUrl(Model $record): string
 {
-    return route('users.edit', ['user' => $record]);
+    return UserResource::getUrl('edit', ['record' => $record]);
 }
 ```

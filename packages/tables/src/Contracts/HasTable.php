@@ -40,6 +40,8 @@ interface HasTable extends HasForms
 
     public function getMountedTableActionForm(): ?ComponentContainer;
 
+    public function getMountedTableActionRecordKey();
+
     public function getMountedTableBulkAction(): ?BulkAction;
 
     public function getMountedTableBulkActionForm(): ?ComponentContainer;
@@ -66,6 +68,8 @@ interface HasTable extends HasForms
 
     public function getTableColumnToggleForm(): ComponentContainer;
 
+    public function getTableRecord(?string $key): ?Model;
+
     public function getTableRecordKey(Model $record): string;
 
     public function getTableRecordTitle(Model $record): string;
@@ -75,4 +79,8 @@ interface HasTable extends HasForms
     public function getTableModelLabel(): string;
 
     public function mountedTableActionRecord($record): void;
+
+    public function toggleTableReordering(): void;
+
+    public function isTableReordering(): bool;
 }

@@ -19,11 +19,13 @@ trait Translatable
             $this->setActiveFormLocale();
         }
 
-        $data = $this->record->toArray();
+        $data = $this->record->attributesToArray();
 
         foreach (static::getResource()::getTranslatableAttributes() as $attribute) {
             $data[$attribute] = $this->record->getTranslation($attribute, $this->activeFormLocale);
         }
+
+        $data = $this->mutateFormDataBeforeFill($data);
 
         $this->form->fill($data);
 

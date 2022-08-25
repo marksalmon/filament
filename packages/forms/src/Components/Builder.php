@@ -40,9 +40,11 @@ class Builder extends Field
         $this->default([]);
 
         $this->afterStateHydrated(static function (Builder $component, ?array $state): void {
-            $items = collect($state ?? [])
-                ->mapWithKeys(static fn ($itemData) => [(string) Str::uuid() => $itemData])
-                ->toArray();
+            $items = [];
+
+            foreach ($state ?? [] as $itemData) {
+                $items[(string) Str::uuid()] = $itemData;
+            }
 
             $component->state($items);
         });
@@ -69,7 +71,7 @@ class Builder extends Field
                     if ($afterUuid) {
                         $newItems = [];
 
-                        foreach ($component->getState() as $uuid => $item) {
+                        foreach ($component->getState() ?? [] as $uuid => $item) {
                             $newItems[$uuid] = $item;
 
                             if ($uuid === $afterUuid) {
@@ -83,8 +85,6 @@ class Builder extends Field
                     }
 
                     $component->getChildComponentContainers()[$newUuid]->fill();
-
-                    $component->hydrateDefaultItemState($newUuid);
 
                     $component->collapsed(false, shouldMakeComponentCollapsible: false);
                 },
@@ -219,11 +219,6 @@ class Builder extends Field
         return $this;
     }
 
-    public function hydrateDefaultItemState(string $uuid): void
-    {
-        $this->getChildComponentContainers()[$uuid]->hydrateDefaultState();
-    }
-
     /**
      * @deprecated Use `withBlockLabels()` instead.
      */
@@ -273,7 +268,7 @@ class Builder extends Field
                     ->statePath("{$itemIndex}.data")
                     ->inlineLabel(false),
             )
-            ->toArray();
+            ->all();
     }
 
     public function getCreateItemBetweenButtonLabel(): string

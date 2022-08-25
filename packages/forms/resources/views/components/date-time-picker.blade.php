@@ -1,13 +1,3 @@
-@once
-    @push('scripts')
-        @php
-            $locale = strtolower(str_replace('_', '-', app()->getLocale()));
-        @endphp
-
-        <script defer src="//unpkg.com/dayjs@1.10.4/locale/{{ $locale }}.js" onload="dayjs.updateLocale('{{ $locale }}')"></script>
-    @endpush
-@endonce
-
 <x-dynamic-component
     :component="$getFieldWrapperView()"
     :id="$getId()"
@@ -23,12 +13,12 @@
         x-data="dateTimePickerFormComponent({
             displayFormat: '{{ convert_date_format($getDisplayFormat())->to('day.js') }}',
             firstDayOfWeek: {{ $getFirstDayOfWeek() }},
-            isAutofocused: {{ $isAutofocused() ? 'true' : 'false' }},
+            isAutofocused: @js($isAutofocused()),
+            isDisabled: @js($isDisabled()),
+            locale: @js(app()->getLocale()),
+            shouldCloseOnDateSelection: @js($shouldCloseOnDateSelection()),
             state: $wire.{{ $applyStateBindingModifiers('entangle(\'' . $getStatePath() . '\')') }},
         })"
-        x-on:click.away="closePicker()"
-        x-on:keydown.escape.stop="closePicker()"
-        x-on:blur="closePicker()"
         {{ $attributes->merge($getExtraAttributes())->class(['relative filament-forms-date-time-picker-component']) }}
         {{ $getExtraAlpineAttributeBag() }}
     >
@@ -38,8 +28,8 @@
         <button
             @unless($isDisabled())
                 x-ref="button"
-                x-on:click="togglePickerVisibility()"
-                x-on:keydown.enter.stop.prevent="open ? selectDate() : openPicker()"
+                x-on:click="togglePanelVisibility()"
+                x-on:keydown.enter.stop.prevent="isOpen() ? selectDate() : togglePanelVisibility()"
                 x-on:keydown.arrow-left.stop.prevent="focusPreviousDay()"
                 x-on:keydown.arrow-right.stop.prevent="focusNextDay()"
                 x-on:keydown.arrow-up.stop.prevent="focusPreviousWeek()"
@@ -47,7 +37,6 @@
                 x-on:keydown.backspace.stop.prevent="clearState()"
                 x-on:keydown.clear.stop.prevent="clearState()"
                 x-on:keydown.delete.stop.prevent="clearState()"
-                x-bind:aria-expanded="open"
                 aria-label="{{ $getPlaceholder() }}"
                 dusk="filament.forms.{{ $getStatePath() }}.open"
             @endunless
@@ -87,14 +76,13 @@
 
         @unless ($isDisabled())
             <div
-                x-ref="picker"
-                x-on:click.away="closePicker()"
-                x-show.transition="open"
-                aria-modal="true"
-                role="dialog"
+                x-ref="panel"
                 x-cloak
+                x-float.placement.bottom-start.offset.flip.shift="{ offset: 8 }"
+                wire:ignore.self
+                wire:key="{{ $this->id }}.{{ $getStatePath() }}.{{ $field::class }}.panel"
                 @class([
-                    'absolute z-10 my-1 bg-white border border-gray-300 rounded-lg shadow-md',
+                    'absolute hidden z-10 my-1 bg-white border border-gray-300 rounded-lg shadow-md',
                     'dark:bg-gray-700 dark:border-gray-600' => config('forms.dark_mode'),
                     'p-4 min-w-[16rem] w-fit' => $hasDate(),
                 ])

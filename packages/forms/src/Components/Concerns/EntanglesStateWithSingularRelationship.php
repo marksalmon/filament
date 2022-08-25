@@ -55,6 +55,7 @@ trait EntanglesStateWithSingularRelationship
 
             if ($relationship instanceof BelongsTo) {
                 $relationship->associate($record->create($state));
+                $relationship->getParent()->save();
             } else {
                 $record->fill($state);
                 $relationship->save($record);
@@ -83,7 +84,7 @@ trait EntanglesStateWithSingularRelationship
 
     protected function getStateFromRelatedRecord(Model $record): array
     {
-        $state = $record->toArray();
+        $state = $record->attributesToArray();
 
         if (
             ($activeLocale = $this->getLivewire()->getActiveFormLocale()) &&
@@ -98,16 +99,17 @@ trait EntanglesStateWithSingularRelationship
         return $state;
     }
 
-    public function getChildComponentContainer(): ComponentContainer
+    public function getChildComponentContainer($key = null): ComponentContainer
     {
+        $container = parent::getChildComponentContainer($key);
+
         $relationship = $this->getRelationship();
 
         if (! $relationship) {
-            return parent::getChildComponentContainer();
+            return $container;
         }
 
-        return parent::getChildComponentContainer()
-            ->model($this->getCachedExistingRecord() ?? $this->getRelatedModel());
+        return $container->model($this->getCachedExistingRecord() ?? $this->getRelatedModel());
     }
 
     public function getRelationship(): BelongsTo | HasOne | MorphOne | null

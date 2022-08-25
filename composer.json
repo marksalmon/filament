@@ -4,7 +4,8 @@
     "license": "MIT",
     "require": {
         "php": "^8.0",
-        "ext-intl": "*"
+        "ext-intl": "*",
+        "composer-runtime-api": "^2.1"
     },
     "require-dev": {
         "akaunting/laravel-money": "^1.2|^2.0|^3.0",
@@ -12,6 +13,7 @@
         "canvural/phpstan-blade-rule": "^0.1.0",
         "danharrin/livewire-rate-limiting": "^0.3|^1.0",
         "doctrine/dbal": "^3.2",
+        "filament/support": "^2.14",
         "laravel/pint": "^1.0",
         "league/flysystem-aws-s3-v3": "^1.0|^2.0|^3.0",
         "nunomaduro/larastan": "^1.0",
@@ -25,6 +27,7 @@
         "spatie/laravel-package-tools": "^1.9",
         "spatie/laravel-ray": "^1.29",
         "spatie/laravel-tags": "^4.2",
+        "spatie/invade": "^1.0",
         "symplify/monorepo-builder": "^10.0",
         "tgalopin/html-sanitizer": "^1.5"
     },
@@ -42,6 +45,7 @@
                 "packages/spatie-laravel-translatable-plugin/src"
             ],
             "Filament\\Forms\\": "packages/forms/src",
+            "Filament\\Notifications\\": "packages/notifications/src",
             "Filament\\Support\\": "packages/support/src",
             "Filament\\Tables\\": "packages/tables/src",
             "Filament\\Tests\\": "tests/src",
@@ -66,5 +70,11 @@
         ]
     },
     "minimum-stability": "dev",
-    "prefer-stable": true
+    "prefer-stable": true,
+    "repositories": [
+        {
+            "type": "path",
+            "url": "packages/support"
+        }
+    ]
 }

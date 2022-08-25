@@ -4,16 +4,18 @@ import Alpine from 'alpinejs'
 import Chart from 'chart.js/auto'
 
 import Collapse from '@alpinejs/collapse'
-import FormsAlpinePlugin from '../../../forms/dist/module.esm'
 import Focus from '@alpinejs/focus'
+import FormsAlpinePlugin from '../../../forms/dist/module.esm'
 import Mousetrap from '@danharrin/alpine-mousetrap'
+import NotificationsAlpinePlugin from '../../../notifications/dist/module.esm'
 import Persist from '@alpinejs/persist'
 import Tooltip from '@ryangjchandler/alpine-tooltip'
 
 Alpine.plugin(Collapse)
-Alpine.plugin(FormsAlpinePlugin)
 Alpine.plugin(Focus)
+Alpine.plugin(FormsAlpinePlugin)
 Alpine.plugin(Mousetrap)
+Alpine.plugin(NotificationsAlpinePlugin)
 Alpine.plugin(Persist)
 Alpine.plugin(Tooltip)
 
@@ -22,30 +24,41 @@ Alpine.store('sidebar', {
 
     collapsedGroups: Alpine.$persist([]).as('collapsedGroups'),
 
-    groupIsCollapsed(group) {
+    groupIsCollapsed: function (group) {
         return this.collapsedGroups.includes(group)
     },
 
-    toggleCollapsedGroup(group) {
-        this.collapsedGroups = this.collapsedGroups.includes(group) ?
-            this.collapsedGroups.filter(g => g !== group) :
-            this.collapsedGroups.concat(group)
+    collapseGroup: function (group) {
+        if (this.collapsedGroups.includes(group)) {
+            return
+        }
+
+        this.collapsedGroups = this.collapsedGroups.concat(group)
     },
 
-    close() {
+    toggleCollapsedGroup: function (group) {
+        this.collapsedGroups = this.collapsedGroups.includes(group)
+            ? this.collapsedGroups.filter(
+                  (collapsedGroup) => collapsedGroup !== group,
+              )
+            : this.collapsedGroups.concat(group)
+    },
+
+    close: function () {
         this.isOpen = false
     },
 
-    open() {
+    open: function () {
         this.isOpen = true
     },
 })
 
 Alpine.store(
     'theme',
-    window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light',
+    window.matchMedia('(prefers-color-scheme: dark)').matches
+        ? 'dark'
+        : 'light',
 )
-
 
 window.addEventListener('dark-mode-toggled', (event) => {
     Alpine.store('theme', event.detail)

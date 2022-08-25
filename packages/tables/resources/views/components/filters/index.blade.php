@@ -1,8 +1,8 @@
 @props([
-    'form'
+    'form',
 ])
 
-<div class="space-y-6 filament-tables-filters-form">
+<div class="space-y-6 filament-tables-filters-form" x-data="{}">
     {{ $form }}
 
     <div class="text-right">

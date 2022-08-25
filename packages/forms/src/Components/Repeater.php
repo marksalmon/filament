@@ -5,7 +5,6 @@ namespace Filament\Forms\Components;
 use Closure;
 use function Filament\Forms\array_move_after;
 use function Filament\Forms\array_move_before;
-use Filament\Forms\ComponentContainer;
 use Filament\Forms\Contracts\HasForms;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -31,11 +30,15 @@ class Repeater extends Field
 
     protected bool | Closure $isInset = false;
 
+    protected bool | Closure $isCloneable = false;
+
     protected ?Collection $cachedExistingRecords = null;
 
     protected string | Closure | null $orderColumn = null;
 
     protected string | Closure | null $relationship = null;
+
+    protected string | Closure | null $itemLabel = null;
 
     protected ?Closure $modifyRelationshipQueryUsing = null;
 
@@ -52,9 +55,11 @@ class Repeater extends Field
         $this->defaultItems(1);
 
         $this->afterStateHydrated(static function (Repeater $component, ?array $state): void {
-            $items = collect($state ?? [])
-                ->mapWithKeys(static fn ($itemData) => [(string) Str::uuid() => $itemData])
-                ->toArray();
+            $items = [];
+
+            foreach ($state ?? [] as $itemData) {
+                $items[(string) Str::uuid()] = $itemData;
+            }
 
             $component->state($items);
         });
@@ -73,8 +78,6 @@ class Repeater extends Field
 
                     $component->getChildComponentContainers()[$newUuid]->fill();
 
-                    $component->hydrateDefaultItemState($newUuid);
-
                     $component->collapsed(false, shouldMakeComponentCollapsible: false);
                 },
             ],
@@ -90,6 +93,24 @@ class Repeater extends Field
 
                     $livewire = $component->getLivewire();
                     data_set($livewire, $statePath, $items);
+                },
+            ],
+            'repeater::cloneItem' => [
+                function (Repeater $component, string $statePath, string $uuidToDuplicate): void {
+                    if ($statePath !== $component->getStatePath()) {
+                        return;
+                    }
+
+                    $newUuid = (string) Str::uuid();
+
+                    $livewire = $component->getLivewire();
+                    data_set(
+                        $livewire,
+                        "{$statePath}.{$newUuid}",
+                        data_get($livewire, "{$statePath}.{$uuidToDuplicate}"),
+                    );
+
+                    $component->collapsed(false, shouldMakeComponentCollapsible: false);
                 },
             ],
             'repeater::moveItemDown' => [
@@ -172,7 +193,7 @@ class Repeater extends Field
             }
 
             foreach (range(1, $count) as $index) {
-                $items[] = [];
+                $items[(string) Str::uuid()] = [];
             }
 
             return $items;
@@ -195,6 +216,13 @@ class Repeater extends Field
         return $this;
     }
 
+    public function cloneable(bool | Closure $condition = true): static
+    {
+        $this->isCloneable = $condition;
+
+        return $this;
+    }
+
     public function disableItemMovement(bool | Closure $condition = true): static
     {
         $this->isItemMovementDisabled = $condition;
@@ -209,27 +237,24 @@ class Repeater extends Field
         return $this;
     }
 
-    public function hydrateDefaultItemState(string $uuid): void
-    {
-        $this->getChildComponentContainers()[$uuid]->hydrateDefaultState();
-    }
-
     public function getChildComponentContainers(bool $withHidden = false): array
     {
         $relationship = $this->getRelationship();
 
         $records = $relationship ? $this->getCachedExistingRecords() : null;
 
-        return collect($this->getState())
-            ->map(function ($itemData, $itemKey) use ($records, $relationship): ComponentContainer {
-                return $this
-                    ->getChildComponentContainer()
-                    ->getClone()
-                    ->statePath($itemKey)
-                    ->model($relationship ? $records[$itemKey] ?? $this->getRelatedModel() : null)
-                    ->inlineLabel(false);
-            })
-            ->toArray();
+        $containers = [];
+
+        foreach ($this->getState() ?? [] as $itemKey => $itemData) {
+            $containers[$itemKey] = $this
+                ->getChildComponentContainer()
+                ->getClone()
+                ->statePath($itemKey)
+                ->model($relationship ? $records[$itemKey] ?? $this->getRelatedModel() : null)
+                ->inlineLabel(false);
+        }
+
+        return $containers;
     }
 
     public function getCreateItemButtonLabel(): string
@@ -250,6 +275,11 @@ class Repeater extends Field
     public function isItemDeletionDisabled(): bool
     {
         return $this->evaluate($this->isItemDeletionDisabled) || $this->isDisabled();
+    }
+
+    public function isCloneable(): bool
+    {
+        return $this->evaluate($this->isCloneable) && (! $this->isDisabled());
     }
 
     public function isInset(): bool
@@ -352,6 +382,13 @@ class Repeater extends Field
         return $this;
     }
 
+    public function itemLabel(string | Closure | null $label): static
+    {
+        $this->itemLabel = $label;
+
+        return $this;
+    }
+
     public function fillFromRelationship(): void
     {
         $this->state(
@@ -369,7 +406,7 @@ class Repeater extends Field
 
         return $records
             ->map(function (Model $record) use ($activeLocale): array {
-                $state = $record->toArray();
+                $state = $record->attributesToArray();
 
                 if ($activeLocale && method_exists($record, 'getTranslatableAttributes') && method_exists($record, 'getTranslation')) {
                     foreach ($record->getTranslatableAttributes() as $attribute) {
@@ -424,9 +461,9 @@ class Repeater extends Field
         $relationshipQuery = $relationship->getQuery();
 
         if ($this->modifyRelationshipQueryUsing) {
-            $this->evaluate($this->modifyRelationshipQueryUsing, [
+            $relationshipQuery = $this->evaluate($this->modifyRelationshipQueryUsing, [
                 'query' => $relationshipQuery,
-            ]);
+            ]) ?? $relationshipQuery;
         }
 
         if ($orderColumn = $this->getOrderColumn()) {
@@ -438,6 +475,18 @@ class Repeater extends Field
         return $this->cachedExistingRecords = $relationshipQuery->get()->mapWithKeys(
             fn (Model $item): array => ["record-{$item[$relatedKeyName]}" => $item],
         );
+    }
+
+    public function getItemLabel(string $uuid): ?string
+    {
+        return $this->evaluate($this->itemLabel, [
+            'state' => $this->getChildComponentContainer($uuid)->getRawState(),
+        ]);
+    }
+
+    public function hasItemLabels(): bool
+    {
+        return $this->itemLabel !== null;
     }
 
     public function clearCachedExistingRecords(): void

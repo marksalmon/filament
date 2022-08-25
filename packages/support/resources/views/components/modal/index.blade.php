@@ -20,6 +20,7 @@
 
 <div
     x-data="{ isOpen: false }"
+    x-trap.noscroll="isOpen"
     @if ($id)
         x-on:{{ $closeEventName }}.window="if ($event.detail.id === '{{ $id }}') isOpen = false"
         x-on:{{ $openEventName }}.window="if ($event.detail.id === '{{ $id }}') isOpen = true"
@@ -47,18 +48,22 @@
         class="fixed inset-0 z-40 flex items-center min-h-screen p-4 overflow-y-auto transition"
     >
         <div
-            @if (filled($id))
-                x-on:click="$dispatch('{{ $closeEventName }}', { id: '{{ $id }}' })"
-            @else
-                x-on:click="isOpen = false"
+            @if (config('filament-support.modal.is_closed_by_clicking_away', true))
+                @if (filled($id))
+                    x-on:click="$dispatch('{{ $closeEventName }}', { id: '{{ $id }}' })"
+                @else
+                    x-on:click="isOpen = false"
+                @endif
             @endif
             aria-hidden="true"
-            class="fixed inset-0 w-full h-full bg-black/50 cursor-pointer filament-modal-close-overlay"
+            @class([
+                'fixed inset-0 w-full h-full bg-black/50 filament-modal-close-overlay',
+                'cursor-pointer' => config('filament-support.modal.is_closed_by_clicking_away', true)
+            ])
         ></div>
 
         <div
             x-show="isOpen"
-            x-trap.noscroll="isOpen"
             @if (filled($id))
                 x-on:keydown.window.escape="$dispatch('{{ $closeEventName }}', { id: '{{ $id }}' })"
             @else
