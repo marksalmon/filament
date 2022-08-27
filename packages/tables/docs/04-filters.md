@@ -344,7 +344,7 @@ protected function getTableFiltersFormWidth(): string
 }
 ```
 
-## Displaying filters above the table content
+## Displaying filters above or below the table content
 
 To render the filters above the table content instead of in a popover, you may use:
 
